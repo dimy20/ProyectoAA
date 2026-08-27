@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 import os
 import psycopg
 from psycopg.rows import dict_row
+import uuid
 load_dotenv(override=True)
 
 COLLECTIONS = [
@@ -17,6 +18,7 @@ COLLECTIONS = [
     "departamentos",
     "cuencas",
     "sentinel_locations",
+    "suelos"
 ]
 
 URL = os.environ.get("MONGO_URI")
@@ -35,6 +37,8 @@ def export_estaciones(client: MongoClient, output_dir=None):
     for e in all_stations:
         nombre = e.get("nombre")
         coords = e.get("location").get("coordinates")
+        _id = str(uuid.UUID(bytes=e.get("_id")))
+
         X.append(coords[0])
         Y.append(coords[1])
 
@@ -43,16 +47,19 @@ def export_estaciones(client: MongoClient, output_dir=None):
                 estaciones.append({
                     "nombre": e.get("nombre"),
                     "type": "METEO",
+                    "id": _id
                 })
             else:
                 estaciones.append({
                     "nombre": e.get("nombre"),
-                    "type": "CLIMA"
+                    "type": "CLIMA",
+                    "id": _id
                 })
         else:
             estaciones.append({
                 "nombre": e.get("nombre"),
-                "type": "GEMS"
+                "type": "GEMS",
+                "id": _id
             })
 
     df = geo.GeoDataFrame(
@@ -70,14 +77,21 @@ def export_puntos_grilla(client: MongoClient, output_dir=None):
     db_grilla = db["puntos_grilla"]
     all_points = db_grilla.find().to_list()
 
+    puntos = []
     X = []
     Y = []
     for p in all_points:
         coords = p.get("location").get("coordinates")
+        _id = str(uuid.UUID(bytes=p.get("_id")))
+
         X.append(coords[0])
         Y.append(coords[1])
+        puntos.append({
+            "id": _id
+        })
 
     df = geo.GeoDataFrame(
+        puntos,
         geometry=geo.points_from_xy(
             X, Y
         ),
@@ -94,9 +108,11 @@ def export_departamentos(client: MongoClient, output_dir=None):
     departamentos = []
     geometries = []
     for d in all_departamentos:
+        _id = str(uuid.UUID(bytes=d.get("_id")))
         departamentos.append({
             "nombre": d.get("nombre"),
             "codigo": d.get("codigo"),
+            "id": _id
         })
         geometries.append(shape(d.get("geometry")))
 
@@ -118,8 +134,10 @@ def export_cuencas(client: MongoClient, output_dir=None):
     cuencas = []
     geometries = []
     for c in all_cuencas:
+        _id = str(uuid.UUID(bytes=c.get("_id")))
         cuencas.append({
             "nombre": c.get("nombre"),
+            "id": _id
         })
         geometries.append(shape(c.get("geometry")))
 
@@ -130,6 +148,31 @@ def export_cuencas(client: MongoClient, output_dir=None):
     )
     df.to_file(os.path.join(output_dir, "cuencas.geojson"), driver="GeoJSON")
 
+def export_areas_erosion_suelos(client: MongoClient, output_dir=None):
+    output_dir = output_dir or EXPORT_PATH
+    db = client["grp05db"]
+    db_areas = db["areas"]
+    # "areas" mezcla las 99 cuencas nombradas con 33563 parcelas de suelo
+    # sin nombre (nombre == "SIN_NOMBRE"); solo exportamos las cuencas.
+    all_cuencas = db_areas.find({"nombre": {"$eq": "SIN_NOMBRE"}}).to_list()
+
+    cuencas = []
+    geometries = []
+    for c in all_cuencas:
+        _id = str(uuid.UUID(bytes=c.get("_id")))
+        cuencas.append({
+            "nombre": c.get("nombre"),
+            "id": _id
+        })
+        geometries.append(shape(c.get("geometry")))
+
+    df = geo.GeoDataFrame(
+        cuencas,
+        geometry=geometries,
+        crs="EPSG:4326"
+    )
+    df.to_file(os.path.join(output_dir, "suelos.geojson"), driver="GeoJSON")
+
 def export_sentinel_locations(client: MongoClient, output_dir=None):
     output_dir = output_dir or EXPORT_PATH
     db = client["grp05db"]
@@ -139,8 +182,10 @@ def export_sentinel_locations(client: MongoClient, output_dir=None):
     locations = []
     geometries = []
     for l in all_locations:
+        _id = str(uuid.UUID(bytes=l.get("_id")))
         locations.append({
             "nombre": l.get("nombre"),
+            "id": _id
         })
         geometries.append(shape(l.get("geometry")))
 
@@ -157,6 +202,7 @@ MONGO_EXPORTERS = {
     "departamentos": export_departamentos,
     "cuencas": export_cuencas,
     "sentinel_locations": export_sentinel_locations,
+    "suelos": export_areas_erosion_suelos
 }
 
 def handle_mongo_arg(collection_name: str):

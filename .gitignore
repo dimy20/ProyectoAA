@@ -2,3 +2,7 @@
 .env
 *.csv
 *.geojson
+.jupyter*
+.ipynb_checkpoints/
+MoreData
+draft

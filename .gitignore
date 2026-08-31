@@ -6,3 +6,6 @@
 .ipynb_checkpoints/
 MoreData
 draft
+__pycache__
+data
+*.zip

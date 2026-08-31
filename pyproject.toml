@@ -15,10 +15,12 @@ dependencies = [
     "plotly>=6.9.0",
     "openpyxl>=3.1.5",
     "contextily>=1.7.1",
+    "boto3>=1.43.83",
 ]
 
 [dependency-groups]
 dev = [
+    "boto3-stubs[s3]>=1.43.83",
     "folium>=0.20.0",
     "jupyter-collaboration>=5.0.0",
     "jupyterlab>=4.6.3",

@@ -9,3 +9,4 @@ draft
 __pycache__
 data
 *.zip
+start-jupyter.sh

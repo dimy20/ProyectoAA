@@ -63,17 +63,41 @@ def upload_data_to_s3(s3_client):
   print("Cleaning up ...")
   Path(fname).unlink(missing_ok=True)
 
+def _get_latest_key(keys: list):
+  ans = []
+  for k in keys:
+    parts = k.split("/")
+    date = parts[1][:-4]
+
+    if "-" not in date:
+      continue
+
+    year, month, day, hour, min, second = date.split("-")
+
+    dt_object = datetime(
+      year=int(year), 
+      month=int(month), 
+      day=int(day), 
+      hour=int(hour), 
+      minute=int(min), 
+      second=int(second)
+    )
+
+    ans.append((dt_object, k))
+
+  ans = sorted(ans, key=lambda kv: kv[0])
+  return ans[-1][1]
+
 def donwload_latest(s3_client, output_data_dir: str = SRC_DATA_DIR):
   # get latest
   res = s3_client.list_objects(
     Bucket=BUCKET_NAME,
     Prefix="data_checkpoints"
   )
+
   objects = res["Contents"]
   keys = [obj["Key"] for obj in objects]
-  # first one is the latest
-  latest = keys[0]
-
+  latest = _get_latest_key(keys)
   save_name = latest.split("/")[1]
 
   # download latest

@@ -37,12 +37,13 @@ def get_s3_client():
   return s3
 
 
-def zip_directory(dirname: Path, zfile: zipfile.ZipFile):
+def zip_directory(dirname: Path, zfile: zipfile.ZipFile, base: Path = None):
+  base = base or dirname
   for f in dirname.glob("*"):
     if f.is_file():
-      zfile.write(f, arcname=f)
+      zfile.write(f, arcname=f.relative_to(base))
     elif f.is_dir():
-      zip_directory(f, zfile)
+      zip_directory(f, zfile, base)
 
 def upload_data_to_s3(s3_client):
   fname = f"{datetime.now().strftime('%Y-%m-%d-%H-%M-%S')}.zip"

@@ -165,27 +165,51 @@ def download_param_observations(station_id: str, station_name: str, long_param_n
 def build_geojson(features: list[dict]) -> dict:
     return {"type": "FeatureCollection", "features": features}
 
-def list_stations():
+def build_stations_geojson(features: list[dict]) -> dict:
+    geo_features = [
+        {
+            "type": "Feature",
+            "geometry": f.get("geometry"),
+            "properties": f.get("properties"),
+        }
+        for f in features
+    ]
+    return build_geojson(geo_features)
+
+def list_stations(as_geojson: bool = False, output: str = None):
     res = http_get(
         url=f"{URL}/collections/stations/items",
         params={
             "f": "json"
         }
     )
-    if res.status_code == 200:
-        data = res.json()
-        for f in data["features"]:
-            props = f.get("properties")
-            geometry = f.get("geometry")
-            coords = geometry.get("coordinates")
-            name = props.get("name")
-            _id = props.get("id")
-            print(f"{name=}, id={_id}, location={coords}")
-    else:
+    if res.status_code != 200:
         print(f"Error: {res.content}")
+        return
+
+    data = res.json()
+    features = data["features"]
+
+    if as_geojson:
+        text = json.dumps(build_stations_geojson(features), indent=2)
+        if output:
+            with open(output, "w") as f:
+                f.write(text)
+            print(f"stations={len(features)} -> {output}")
+        else:
+            print(text)
+        return
+
+    for f in features:
+        props = f.get("properties")
+        geometry = f.get("geometry")
+        coords = geometry.get("coordinates")
+        name = props.get("name")
+        _id = props.get("id")
+        print(f"{name=}, id={_id}, location={coords}")
 
 def cmd_list_stations(args):
-    list_stations()
+    list_stations(as_geojson=args.geojson, output=args.output)
 
 def cmd_list_params(args):
     for short_name in sorted(PARAM_DESCRIPTIONS):
@@ -243,10 +267,18 @@ if __name__ == '__main__':
     )
     sub = parser.add_subparsers(dest="command", required=True, metavar="command")
 
-    sub.add_parser(
+    p_list_stations = sub.add_parser(
         "list-stations",
         help="list all SYNOP stations (name, WIGOS id, lon/lat/elevation)",
         description="List all SYNOP stations known to the API, with their WIGOS id and location.",
+    )
+    p_list_stations.add_argument(
+        "--geojson", action="store_true",
+        help="output the stations as a GeoJSON FeatureCollection instead of one line per station",
+    )
+    p_list_stations.add_argument(
+        "-o", "--output", metavar="OUTPUT",
+        help="write the GeoJSON to this file instead of stdout (only used with --geojson)",
     )
 
     p_params = sub.add_parser(

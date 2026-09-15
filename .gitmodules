@@ -1,0 +1,3 @@
+[submodule "external/acolite"]
+	path = external/acolite
+	url = https://github.com/acolite/acolite

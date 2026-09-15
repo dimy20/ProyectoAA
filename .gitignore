@@ -10,3 +10,8 @@ __pycache__
 data
 *.zip
 start-jupyter.sh
+*.log
+TIMELINE.md
+prueba_sentinel.ipynb
+Dockerfile
+.dockerignore

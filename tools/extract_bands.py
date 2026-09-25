@@ -71,10 +71,18 @@ def download(matchups: gpd.GeoDataFrame, bands: List[str], shard_id: int, limit:
         x, y = to_wgs84.transform(row.geometry.x, row.geometry.y)
         bbox = [x - window_deg, y - window_deg, x + window_deg, y + window_deg]
 
+        available_bands = [b for b in bands if b in item.assets]
+        missing = set(bands) - set(available_bands)
+        if missing:
+            print(f"[{index}] item {item.id} missing bands {sorted(missing)}, saving available subset")
+        if not available_bands:
+            print(f"[{index}] failed: none of the requested bands are available in item {item.id}")
+            continue
+
         try:
             ds = odc.stac.load(
                 [item],
-                bands=bands,
+                bands=available_bands,
                 resolution=resolution,
                 bbox=bbox,
                 chunks=None,
@@ -86,7 +94,10 @@ def download(matchups: gpd.GeoDataFrame, bands: List[str], shard_id: int, limit:
             continue
 
         ds.to_netcdf(out_path)
+        ds.close()
         print(f"[{index}] saved {out_path.name}")
+
+    (OUT_DIR / "_DONE").touch()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

@@ -1,0 +1,8 @@
+{
+  "n_estimators": [64, 128, 256],
+  "max_depth": [3, 5, 7],
+  "min_samples_leaf": [4, 6, 8],
+  "max_features": [null, "sqrt", "log2"],
+  "class_weight": [null, "balanced", "balanced_subsample"],
+  "max_samples": [0.5, 0.7, null]
+}

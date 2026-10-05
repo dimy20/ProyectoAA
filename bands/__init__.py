@@ -1,6 +1,18 @@
 import pystac
 import xarray as xr
 import os
+from pathlib import Path
+from typing import List
+
+def find_shard_files(bands_dir) -> dict[str, List[Path]]:
+    files = bands_dir.glob("shard-*/*.nc")
+    ans = {}
+    for f in files:
+        fstr = str(f)
+        index = fstr.find("shard-")
+        shard = fstr[index:index+7]
+        ans[shard] = ans.get(shard, []) + [f]
+    return ans
 
 BAND_RESOLUTION = {
     "B01": 60, "B02": 10, "B03": 10, "B04": 10, "B05": 20, "B06": 20, "B07": 20,

@@ -1,7 +1,7 @@
 """CLI to archive the local data dir to s3 and download the latest checkpoint back."""
 
 import argparse
-import boto3
+import sys
 import os
 from dotenv import load_dotenv
 import zipfile
@@ -9,32 +9,17 @@ from datetime import datetime
 from pathlib import Path
 import time
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from core.s3 import DEFAULT_BUCKET, get_s3_client
+
 load_dotenv()
 
 
-BUCKET_NAME = "proyecto-water-aa"
+BUCKET_NAME = DEFAULT_BUCKET
 # el 'src' de lata data
 # Este script siempre va utilizar este dir para download/upload.
 # todos los datos que se busquen persistir en s3 tiene que estar ahi.
 SRC_DATA_DIR = "data" 
-
-def get_s3_client():
-  aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"]
-  aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"]
-  region_name=os.environ.get("AWS_REGION", "us-east-1")
-
-  if not aws_access_key_id or not aws_secret_access_key or not region_name:
-    raise RuntimeError("Missing AWS credentials")
-
-
-  s3 = boto3.client(
-    "s3",
-    aws_access_key_id=aws_access_key_id,
-    aws_secret_access_key=aws_secret_access_key,
-    region_name=region_name
-  )
-
-  return s3
 
 
 def zip_directory(dirname: Path, zfile: zipfile.ZipFile, base: Path = None):

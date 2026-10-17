@@ -15,4 +15,9 @@ TIMELINE.md
 prueba_sentinel.ipynb
 Dockerfile
 .dockerignore
-models
+notebooks/09_acolite/safe
+notebooks/09_acolite/acolite-output
+
+# Scripts de datos; la regla data anterior excluye directorios con ese nombre.
+!tools/data/
+!tools/data/*.py

@@ -1,6 +1,6 @@
 """Launch NUM_SHARDS parallel extract_bands.py workers, one OS process per shard.
 
-Each shard is a fully separate process (python -m tools.extract_bands --shard-id i),
+Each shard is a fully separate process (python -m tools.no_acolite.extract_bands --shard-id i),
 so there's no shared state / thread-safety to worry about between workers. Logs go
 to logs/shard-<i>.log since mixing several tqdm bars on one stdout is unreadable.
 
@@ -16,10 +16,10 @@ import sys
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
-from tools.extract_bands import NUM_SHARDS, DEFAULT_BANDS, WINDOW_DEG, DATA
+from tools.no_acolite.extract_bands import NUM_SHARDS, DEFAULT_BANDS, WINDOW_DEG, DATA
 
 LOG_DIR = Path("logs")
 MAX_RETRIES = 5
@@ -37,7 +37,7 @@ def shard_done(bands: str, shard_id: int) -> bool:
 
 def launch_shard(shard_id: int, bands: str, limit: int | None, window_deg: float):
     cmd = [
-        sys.executable, "-m", "tools.extract_bands",
+        sys.executable, "-m", "tools.no_acolite.extract_bands",
         "--shard-id", str(shard_id),
         "--bands", bands,
         "--window-deg", str(window_deg),

@@ -1,3 +1,8 @@
+"""
+DEPRECATED
+Esto se descontinuo porque no podemos usar esta API para nuestro proyecto.
+No tenemos disponible la ventana temporal que necesitamos.
+"""
 import httpx
 import json
 import sys

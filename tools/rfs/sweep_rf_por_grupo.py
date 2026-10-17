@@ -1,6 +1,6 @@
 """
 Barrido de hiperparametros de RandomForestClassifier por grupo (grupo_nombre), usado para
-encontrar los mejores hiperparametros por grupo para tools/train_rfs.py.
+encontrar los mejores hiperparametros por grupo para tools/rfs/train_rfs.py.
 
 El grid a barrer no esta hardcodeado: se lee de un JSON de experiments/rfs/ (--experiment),
 con el mismo formato que PARAM_GRID (una lista de valores por hiperparametro). Asi se pueden
@@ -17,13 +17,13 @@ Ademas de imprimir el resultado, cada corrida crea un directorio nuevo en
 data/hyperparams/run-<timestamp>/ (nunca pisa una corrida anterior) con un
 grid_search-rfs-grupos.json adentro (con una key "experiment" que apunta al JSON de
 experiments/rfs/ usado, y una key "grupos" con los resultados), listo para pasarle a
-tools/train_rfs.py --grid-search-file.
+tools/rfs/train_rfs.py --grid-search-file.
 
 Se corre como modulo (no como script suelto) para que el import de `models` resuelva, desde la
 raiz del repo:
 
-    python -m tools.sweep_rf_por_grupo
-    python -m tools.sweep_rf_por_grupo --experiment experiments/rfs/otro_experimento.json
+    python -m tools.rfs.sweep_rf_por_grupo
+    python -m tools.rfs.sweep_rf_por_grupo --experiment experiments/rfs/otro_experimento.json
 """
 
 import argparse

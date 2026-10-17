@@ -17,8 +17,8 @@ Cada invocacion crea una corrida nueva en data/datasets/models/rfs/run-<timestam
 usados, para poder rastrear de donde salio cada modelo despues.
 
 Uso:
-    python -m tools.train_rfs --grid-search-file <FILE>
-    python -m tools.train_rfs --grid-search-file <FILE> --grupo LDS
+    python -m tools.rfs.train_rfs --grid-search-file <FILE>
+    python -m tools.rfs.train_rfs --grid-search-file <FILE> --grupo LDS
 """
 
 import argparse
@@ -33,7 +33,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--grid-search-file",
         required=True,
-        help="JSON con los mejores hiperparametros por grupo (formato de tools/sweep_rf_por_grupo.py).",
+        help="JSON con los mejores hiperparametros por grupo (formato de tools/rfs/sweep_rf_por_grupo.py).",
     )
     parser.add_argument(
         "--grupo",

@@ -1,0 +1,10 @@
+acolite_params:
+  scene_box_margin: 0.15
+  dsf_residual_glint_correction: false
+  dsf_aot_estimate: fixed
+  l2w_parameters: "rhow_*"
+  l2w_mask_threshold: 0.05
+  rgb_rhot: true
+  map_l2w: false
+  l1r_delete_netcdf: true
+  s2_target_res: 20

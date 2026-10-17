@@ -1,0 +1,37 @@
+# Ubuntu 24.04 ships GDAL 3.8.4, which must match the `gdal==3.8.4.*` python bindings.
+FROM ubuntu:24.04
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl ca-certificates build-essential libgdal-dev gdal-bin \
+    && rm -rf /var/lib/apt/lists/*
+
+ADD https://astral.sh/uv/install.sh /uv-installer.sh
+RUN sh /uv-installer.sh && rm /uv-installer.sh
+
+ENV PATH="/root/.local/bin:$PATH"
+ENV PYTHONUNBUFFERED=1
+ENV UV_PYTHON=3.11
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+WORKDIR /app
+
+COPY pyproject.toml uv.lock ./
+
+# only the acolite group (the full project pulls torch & co). gdal is built separately: its
+# numpy bindings (_gdal_array) are only compiled if numpy is already visible at build time.
+RUN uv sync --frozen --no-install-project --only-group acolite --no-install-package gdal \
+    && uv pip install setuptools wheel \
+    && uv pip install --no-build-isolation "gdal==3.8.4.*" \
+    && uv pip install geopandas pandas xarray python-dotenv boto3 tqdm runpod
+
+COPY external/acolite external/acolite
+COPY core core
+COPY tools/ac/run_acolite.py tools/ac/run_acolite.py
+
+# inputs of this run: baked into the image passed to run_acolite.py via CMD
+COPY data/nuevos/l1c_scene_products_geometria.csv data/nuevos/matchups_registros_finales_geometria.geojson data/nuevos/
+
+CMD ["python", "tools/ac/run_acolite.py", \
+     "--scenes", "data/nuevos/l1c_scene_products_geometria.csv", \
+     "--matchups", "data/nuevos/matchups_registros_finales_geometria.geojson"]

@@ -1,0 +1,9 @@
+*
+!pyproject.toml
+!uv.lock
+!core/
+!core/**
+!tools/ac/run_acolite.py
+!external/acolite
+!data/nuevos/l1c_scene_products_geometria.csv
+!data/nuevos/matchups_registros_finales_geometria.geojson
